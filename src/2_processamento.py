@@ -3,7 +3,6 @@ from sqlalchemy import create_engine
 import config
 import os
 
-# Configuração para o Pandas ler/escrever no MinIO (S3)
 storage_options = {
     "key": config.MINIO_ACCESS_KEY,
     "secret": config.MINIO_SECRET_KEY,
@@ -12,8 +11,7 @@ storage_options = {
 
 def processar_silver():
     print("--- Iniciando Camada Silver (Limpeza e Parquet) ---")
-    
-    # 1. Ler da Camada Raw (CSV)
+
     caminho_raw = f"s3://{config.BUCKET_NAME}/raw/supermarket_sales.csv"
     try:
         df = pd.read_csv(caminho_raw, storage_options=storage_options)
@@ -22,8 +20,6 @@ def processar_silver():
         print(f"Erro ao ler Raw: {e}")
         return None
 
-    # 2. Transformações (Limpeza)
-    # Renomear colunas para português (melhora a apresentação)
     df.columns = [c.lower().replace(" ", "_") for c in df.columns]
     rename_map = {
         'invoice_id': 'id_fatura',
@@ -45,10 +41,8 @@ def processar_silver():
     }
     df = df.rename(columns=rename_map)
     
-    # Converter data
     df['data_venda'] = pd.to_datetime(df['data_venda'])
     
-    # 3. Salvar na Camada Silver (Parquet)
     caminho_silver = f"s3://{config.BUCKET_NAME}/silver/vendas_tratadas.parquet"
     df.to_parquet(caminho_silver, storage_options=storage_options)
     print(f"Sucesso: Dados limpos salvos em '{caminho_silver}'")

@@ -144,7 +144,8 @@ git clone https://github.com/seu-repo/projeto-supermercado.git
 ### 2️⃣ Subir os containers
 
 ```bash
-docker-compose up -d
+cd infra
+docker compose up --build -d
 ```
 
 ### 3️⃣ Inserir arquivos brutos
